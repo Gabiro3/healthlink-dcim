@@ -2,6 +2,7 @@
 export interface AIAnalysisResult {
   confidence_score: number
   processing_time: number
+  imgUrl: string
   diagnosis: string
 }
 
@@ -9,6 +10,7 @@ export interface AIAnalysisResult {
 export const defaultAIResult: AIAnalysisResult = {
   diagnosis: "No diagnosis available",
   confidence_score: 0,
+  imgUrl: "",
   processing_time: 0,
 }
 
@@ -68,12 +70,14 @@ export async function processImageWithAI(
     const diagnosisResult = data[1] // 'Pneumonia Negative'
     const modelConfidence = data[2] // '97.70%'
     const computationTime = data[3] // '0.6324 seconds'
+    const imgUrl = data[0].url
 
     // Structure the result in the format expected by AIAnalysisResult
     const result: AIAnalysisResult = {
       diagnosis: diagnosisResult,
       confidence_score: modelConfidence,
       processing_time: computationTime,
+      imgUrl: imgUrl
     }
 
     return result

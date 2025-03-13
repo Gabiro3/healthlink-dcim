@@ -179,7 +179,7 @@ export default function AIAnalysisSidebar({ patientInfo, imageUrl, imageBlob, on
         <div className="mt-4 bg-gray-800 rounded-lg p-4">
           <div className="flex flex-col items-center justify-center">
             <img
-              src={imageUrl || "/placeholder.svg"}
+              src={aiResult.imgUrl || imageUrl}
               alt="Selected DICOM image"
               className="max-w-full h-auto mb-4 border border-gray-600 rounded-md"
             />
