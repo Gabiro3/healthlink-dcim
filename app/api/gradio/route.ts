@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     // ✅ Send the Blob, NOT the file path
     const client = await Client.connect("pb01/healthlink-beta");
     const result = await client.predict("/predict_and_superimpose", {
-      img_path: imageBlob, // ✅ Correct format
+      img_input: imageBlob, // ✅ Correct format
     });
     return NextResponse.json(result.data, { status: 200 });
   } catch (error) {
