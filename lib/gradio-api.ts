@@ -41,51 +41,33 @@ export async function processImageWithAI(
   doctorNotes = "",
 ): Promise<AIAnalysisResult> {
   try {
-    // Convert the image blob to base64 for transmission
-    const base64Image = await blobToBase64(imageBlob)
+    const formData = new FormData();
+    formData.append("img_input", imageBlob, "image.png");
+    formData.append("patient_name", patientName);
+    formData.append("doctor_notes", doctorNotes);
 
-    // Prepare the payload for the API request
-    const payload = {
-      img_path: base64Image,
-      patient_name: patientName,
-      doctor_notes: doctorNotes,
-    }
-
-    // Call the Next.js API route
     const response = await fetch(`/api/gradio`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
+      body: formData, // ✅ Send FormData instead of converting to Base64
+    });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(`API request failed: ${response.statusText}. ${errorData.error || ""}`)
+      throw new Error(`API request failed: ${response.statusText}`);
     }
 
-    // Parse the response
-    const data = await response.json()
-
-    // Assuming data is an array as described in the API response format
-    const diagnosisResult = data[1] // 'Pneumonia Negative'
-    const modelConfidence = data[2] // '97.70%'
-    const computationTime = data[3] // '0.6324 seconds'
-    const imgUrl = data[0].url
-
-    // Structure the result in the format expected by AIAnalysisResult
-    const result: AIAnalysisResult = {
-      diagnosis: diagnosisResult,
-      confidence_score: modelConfidence,
-      processing_time: computationTime,
-      imgUrl: imgUrl
-    }
-
-    return result
+    const data = await response.json();
+    return {
+      diagnosis: data[1],
+      confidence_score: data[2],
+      processing_time: data[3],
+      imgUrl: data[0].url,
+    };
   } catch (error) {
-    console.error("Error processing image with AI:", error)
-    throw error
+    console.error("Error processing image with AI:", error);
+    throw error;
   }
 }
+
 
 
 /**

@@ -136,34 +136,53 @@ export default function DicomViewer() {
     })
   }
 
-  // Add a function to capture the canvas image as a blob
   const captureCanvasImage = async (index: number) => {
     try {
-      // Get a reference to the canvas through a ref or other means
-      const canvasRef = document.querySelector(`canvas[data-index="${index}"]`) as HTMLCanvasElement
-
-      if (canvasRef) {
-        // Convert canvas to blob
-        const blob = await new Promise<Blob>((resolve, reject) => {
-          canvasRef.toBlob((blob) => {
-            if (blob) {
-              resolve(blob)
-            } else {
-              reject(new Error("Failed to convert canvas to blob"))
-            }
-          }, "image/png")
-        })
-
-        setCapturedImageBlob(blob)
+      const canvasRef = document.querySelector(`canvas[data-index="${index}"]`) as HTMLCanvasElement;
+      if (!canvasRef) {
+        console.error("Canvas not found for index:", index);
+        setCapturedImageBlob(null);
+        return;
+      }
+  
+      const ctx = canvasRef.getContext("2d");
+      if (!ctx) {
+        console.error("Failed to get canvas context");
+        return;
+      }
+  
+      // Get the image data from the canvas (assuming the image is fully contained in the canvas)
+      const imageData = ctx.getImageData(0, 0, canvasRef.width, canvasRef.height);
+  
+      // Create a temporary canvas to extract only the image
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = imageData.width;
+      tempCanvas.height = imageData.height;
+      const tempCtx = tempCanvas.getContext("2d");
+      if (!tempCtx) {
+        console.error("Failed to create temp canvas context");
+        return;
+      }
+  
+      // Draw the extracted image onto the temporary canvas
+      tempCtx.putImageData(imageData, 0, 0);
+  
+      // Convert the temp canvas to a Blob
+      const blob = await new Promise<Blob | null>((resolve) => {
+        tempCanvas.toBlob((blob) => resolve(blob), "image/jpeg");
+      });
+  
+      if (blob) {
+        setCapturedImageBlob(blob);
       } else {
-        console.error("Canvas not found for index:", index)
-        setCapturedImageBlob(null)
+        console.error("Failed to convert extracted image to blob");
+        setCapturedImageBlob(null);
       }
     } catch (error) {
-      console.error("Error capturing canvas image:", error)
-      setCapturedImageBlob(null)
+      console.error("Error capturing canvas image:", error);
+      setCapturedImageBlob(null);
     }
-  }
+  };  
 
   // Toggle the AI sidebar
   const toggleAISidebar = () => {

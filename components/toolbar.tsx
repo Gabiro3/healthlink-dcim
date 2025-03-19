@@ -279,11 +279,16 @@ export default function Toolbar({
           {/* AI Analysis Button */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="default" onClick={toggleAISidebar} className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                variant="default"
+                onClick={() => window.open("https://huggingface.co/spaces/pb01/healthlink-beta", "_blank")}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 <Brain className="h-5 w-5 mr-2" />
                 Analyze with AI
               </Button>
             </TooltipTrigger>
+
             <TooltipContent>
               <p>Analyze Image with AI</p>
             </TooltipContent>
