@@ -281,7 +281,7 @@ export default function Toolbar({
             <TooltipTrigger asChild>
               <Button
                 variant="default"
-                onClick={() => window.open("https://huggingface.co/spaces/pb01/healthlink-beta", "_blank")}
+                onClick={toggleAISidebar}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Brain className="h-5 w-5 mr-2" />

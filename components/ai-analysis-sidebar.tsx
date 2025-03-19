@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { X, Loader2, AlertCircle, CheckCircle, BarChart } from "lucide-react"
+import { X, Loader2, AlertCircle, CheckCircle, BarChart, Maximize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { processImageWithAI, type AIAnalysisResult, defaultAIResult } from "@/lib/gradio-api"
@@ -27,6 +27,7 @@ export default function AIAnalysisSidebar({ patientInfo, imageUrl, imageBlob, on
   const [hasAnalyzed, setHasAnalyzed] = useState(false)
   const [progress, setProgress] = useState(0)
   const { toast } = useToast()
+  const imgRef = useRef<HTMLImageElement>(null)
 
   // Use refs to track the latest state without triggering re-renders
   const resultRef = useRef<AIAnalysisResult>(defaultAIResult)
@@ -83,6 +84,19 @@ export default function AIAnalysisSidebar({ patientInfo, imageUrl, imageBlob, on
       progressIntervalRef.current = null
     }
   }, [])
+  const enterFullScreen = (imgRef: React.RefObject<HTMLImageElement | null>) => {
+    if (imgRef.current) {
+      if (imgRef.current.requestFullscreen) {
+        imgRef.current.requestFullscreen();
+      } else if ((imgRef.current as any).webkitRequestFullscreen) {
+        (imgRef.current as any).webkitRequestFullscreen(); // Safari
+      } else if ((imgRef.current as any).mozRequestFullScreen) {
+        (imgRef.current as any).mozRequestFullScreen(); // Firefox
+      } else if ((imgRef.current as any).msRequestFullscreen) {
+        (imgRef.current as any).msRequestFullscreen(); // IE/Edge
+      }
+    }
+  };
 
   const runAnalysis = async () => {
     if (!imageBlob) {
@@ -99,7 +113,18 @@ export default function AIAnalysisSidebar({ patientInfo, imageUrl, imageBlob, on
 
     try {
       // Pre-process the image if needed (e.g., resize for faster upload)
-      const processedBlob = imageBlob
+      const convertImageUrlToBlob = async (imageUrl: string): Promise<Blob> => {
+        try {
+          const response = await fetch(imageUrl); // Fetch the image
+          const blob = await response.blob(); // Convert response to blob
+          return blob;
+        } catch (error) {
+          console.error("Error converting image URL to Blob:", error);
+          throw error;
+        }
+      };
+           
+      const processedBlob = await convertImageUrlToBlob(imageUrl)
 
       // Start the API request
       const result = await processImageWithAI(processedBlob, patientInfo.name, `Study: ${patientInfo.study}`)
@@ -178,11 +203,21 @@ export default function AIAnalysisSidebar({ patientInfo, imageUrl, imageBlob, on
         <h3 className="font-medium text-lg">AI Findings</h3>
         <div className="mt-4 bg-gray-800 rounded-lg p-4">
           <div className="flex flex-col items-center justify-center">
-            <img
-              src={aiResult.imgUrl || imageUrl}
-              alt="Selected DICOM image"
-              className="max-w-full h-auto mb-4 border border-gray-600 rounded-md"
-            />
+          <img
+          ref={imgRef}
+          src={aiResult.imgUrl || imageUrl}
+          alt="Selected DICOM image"
+          className="max-w-full h-auto mb-4 border border-gray-600 rounded-md"
+        />
+
+        {/* Fullscreen Icon Button */}
+        <button
+          onClick={() => enterFullScreen(imgRef)}
+          className="absolute right-8 bottom-[250px] bg-gray-800 bg-opacity-50 p-2 rounded-full hover:bg-opacity-75 transition"
+          title="View Fullscreen"
+        >
+          <Maximize2 className="h-5 w-5 text-white" />
+        </button>
 
             {isLoading && (
               <div className="w-full mb-4">

@@ -42,7 +42,7 @@ export async function processImageWithAI(
 ): Promise<AIAnalysisResult> {
   try {
     const formData = new FormData();
-    formData.append("img_input", imageBlob, "image.png");
+    formData.append("img_input", imageBlob, "image.jpeg");
     formData.append("patient_name", patientName);
     formData.append("doctor_notes", doctorNotes);
 
